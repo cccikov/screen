@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>阴阳屏检测</title>
+    <style type="text/css">
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: 200%;
+    }
+
+    #wrap {
+        word-break: break-all;
+        height: 100%;
+        overflow: hidden;
+        -webkit-transform: translate3d(0, 0, 0);
+        -moz-transform: translate3d(0, 0, 0);
+        -ms-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+    </style>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript">
+    $(function() {
+        var bg_color = {
+            name: "background",
+            h: 0,
+            l: 10
+        }
+        var _flag = 0;
+        var tar = bg_color;
+        var winH = $(window).height();
+        var winW = $(window).width();
+
+
+        $("#wrap").on("touchstart", function(e) {
+
+            var _that = $(this);
+            var oriTime = new Date().getTime();
+            var oriY = e.originalEvent.touches[0].clientY,
+                nowY = oriY;
+            var oriX = e.originalEvent.touches[0].clientX,
+                nowX = oriX;
+            var moveFlag = false;
+
+
+            _that.on("touchmove", function(e) {
+                e.preventDefault();
+                nowY = e.originalEvent.touches[0].clientY;
+                nowX = e.originalEvent.touches[0].clientX;
+                var deltaX = nowX - oriX;
+                var deltaY = nowY - oriY;
+                tar.h += deltaX / winW * (360 / 10); //  满屏就是(360 / 10) 比例乘以(360 / 10)
+                tar.l += -deltaY / winH ; // 满屏就是10 比例乘以10
+
+                if (tar.l >= 100) {
+                    tar.l = 100;
+                }
+                if (tar.l <= 0) {
+                    tar.l = 0;
+                }
+
+                if (tar.h >= 360) {
+                    tar.h = 0;
+                }
+                if (tar.h < 0) {
+                    tar.h = 360;
+                }
+                console.log(tar.name, "hsl(" + parseInt(tar.h * 10) / 10 + ", 100%, " + parseInt(tar.l * 10) / 10 + "%)");
+                _that.css(tar.name, "hsl(" + parseInt(tar.h * 10) / 10 + ", 100%, " + parseInt(tar.l * 10) / 10 + "%)");
+
+                if (deltaX > 10 || deltaX < -10 || deltaY > 10 || deltaY < -10) {
+                    moveFlag = true;
+                }
+
+                oriY = nowY;
+                oriX = nowX;
+            });
+
+            _that.on("touchend", function() {
+                _that.off("touchend").off("touchmove");
+            });
+        }).css(tar.name, "hsl(" + parseInt(tar.h) + ", 100%, " + parseInt(tar.l) + "%)");;
+        $('.btn button').on('click',function(){
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait').catch((error) => {
+                    console.error('无法锁定屏幕方向:', error);
+                });
+            }
+            document.documentElement.requestFullscreen().then(()=>{
+                $('.btn').hide()
+            })
+        })
+    });
+    </script>
+</head>
+
+<body>
+    <div class="btn">
+        <button>全屏</button>
+    </div>
+    <div id="wrap">
+    </div>
+</body>
+
+</html>
