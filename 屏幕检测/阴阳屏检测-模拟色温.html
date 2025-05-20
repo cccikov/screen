@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>阴阳屏检测</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 200%;
+        }
+
+        #wrap {
+            word-break: break-all;
+            height: 100%;
+            overflow: hidden;
+            font-size: 30px;
+            line-height: 2;
+            letter-spacing: 15px;
+            -webkit-transform: translate3d(0, 0, 0);
+            -moz-transform: translate3d(0, 0, 0);
+            -ms-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+
+        .btn {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+    </style>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            const str = new Array(300).fill(0).map(item => {
+                return getRandomLetter(true)
+            })
+            $("#wrap").html(str.join(''))
+
+
+            const colorTemperatures = [
+                { "kelvin": 1000, "r": 255, "g": 107, "b": 0 },
+                { "kelvin": 1800, "r": 255, "g": 140, "b": 0 },
+                { "kelvin": 2200, "r": 255, "g": 170, "b": 50 },
+                { "kelvin": 2700, "r": 255, "g": 218, "b": 185 },
+                { "kelvin": 3000, "r": 255, "g": 229, "b": 204 },
+                { "kelvin": 3500, "r": 255, "g": 237, "b": 222 },
+                { "kelvin": 4000, "r": 255, "g": 243, "b": 235 },
+                { "kelvin": 5000, "r": 255, "g": 249, "b": 243 },
+                { "kelvin": 5500, "r": 255, "g": 251, "b": 247 },
+                { "kelvin": 5800, "r": 255, "g": 252, "b": 248 },
+                { "kelvin": 6000, "r": 255, "g": 253, "b": 249 },
+                { "kelvin": 6200, "r": 254, "g": 254, "b": 250 },
+                { "kelvin": 6400, "r": 253, "g": 254, "b": 251 },
+                { "kelvin": 6500, "r": 255, "g": 255, "b": 255 },
+                { "kelvin": 6600, "r": 252, "g": 255, "b": 252 },
+                { "kelvin": 6800, "r": 250, "g": 255, "b": 253 },
+                { "kelvin": 7000, "r": 248, "g": 255, "b": 254 },
+                { "kelvin": 7200, "r": 245, "g": 254, "b": 255 },
+                { "kelvin": 7400, "r": 242, "g": 253, "b": 255 },
+                { "kelvin": 7500, "r": 230, "g": 245, "b": 255 },
+                { "kelvin": 7500, "r": 230, "g": 245, "b": 255 },
+                { "kelvin": 9300, "r": 200, "g": 230, "b": 255 }
+            ]
+
+            const index = colorTemperatures.findIndex(item=>item.kelvin === 6500)
+
+            let bg_color = {
+                name: "background",
+                value: index
+            }
+            let _flag = 0;
+            let tar = bg_color;
+            let winH = $(window).height();
+            let winW = $(window).width();
+
+
+
+            $("#wrap").on("touchstart", function (e) {
+                e.stopPropagation()
+
+                let _that = $(this);
+                let oriTime = new Date().getTime();
+                let oriY = e.originalEvent.touches[0].clientY,
+                    nowY = oriY;
+                let oriX = e.originalEvent.touches[0].clientX,
+                    nowX = oriX;
+                let moveFlag = false;
+                _flag = 0
+
+
+                _that.on("touchmove", function (e) {
+                    e.preventDefault();
+
+                    nowY = e.originalEvent.touches[0].clientY;
+                    nowX = e.originalEvent.touches[0].clientX;
+                    let deltaX = nowX - oriX;
+                    let deltaY = nowY - oriY;
+                    console.log(deltaY)
+
+                    if (_flag === 1) {
+                        return
+                    }
+                    if (deltaY > 100) {
+                        tar.value--
+                        if (tar.value < 0) {
+                            tar.value = 0
+                        }
+                        _flag = 1
+                    }
+                    if (deltaY < -100) {
+                        tar.value++
+                        if (tar.value > colorTemperatures.length - 1) {
+                            tar.value = colorTemperatures.length - 1
+                        }
+                        _flag = 1
+                    }
+
+                    console.log(tar.value)
+                    const item = colorTemperatures[tar.value]
+                    const rgb = `rgb(${item.r},${item.g},${item.b})`
+                    _that.css(tar.name, `${rgb}`);
+                    $("#wrap").html(rgb + str.join(''))
+
+                });
+
+                _that.on("touchend", function () {
+                    _that.off("touchend").off("touchmove");
+                });
+            }).css(tar.name, "hsl(" + parseInt(tar.h) + ", 100%, " + parseInt(tar.l) + "%)");;
+            $('.btn button').on('click', function () {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('portrait').catch((error) => {
+                        console.error('无法锁定屏幕方向:', error);
+                    });
+                }
+                document.documentElement.requestFullscreen().then(() => {
+                    $('.btn').hide()
+                })
+            })
+        });
+
+        function getRandomLetter(isUpperCase = false) {
+            // 65-90 对应 A-Z，97-122 对应 a-z
+            const base = isUpperCase ? 65 : 97;
+            const offset = Math.floor(Math.random() * 26); // 生成 0-25 的随机数
+            return String.fromCharCode(base + offset);
+        }
+    </script>
+
+
+</head>
+
+<body>
+    <div class="btn">
+        <button>全屏</button>
+    </div>
+    <div id="wrap">
+    </div>
+</body>
+
+</html>
