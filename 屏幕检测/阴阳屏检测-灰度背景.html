@@ -31,7 +31,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%,-50%);
+            transform: translate(-50%, -50%);
             z-index: 2;
         }
     </style>
@@ -74,9 +74,14 @@
 
 
                     tar.value += deltaY / winH * 30
+                    if(tar.value > 255){
+                        tar.value = 255
+                    }
+                    console.log(tar.value)
                     const colorValue = parseInt(tar.value).toString(16).padStart(2, '0')
                     console.log(colorValue)
                     _that.css(tar.name, `#${colorValue}${colorValue}${colorValue}`);
+                    $("#wrap").html(colorValue + str.join(''))
 
                     oriY = nowY;
                     oriX = nowX;
