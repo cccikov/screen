@@ -15,12 +15,12 @@
         }
 
         #wrap {
-            word-break: break-all;
+            text-align: justify;
+            text-align-last: justify;
             height: 100%;
             overflow: hidden;
             font-size: 30px;
             line-height: 2;
-            letter-spacing: 15px;
             -webkit-transform: translate3d(0, 0, 0);
             -moz-transform: translate3d(0, 0, 0);
             -ms-transform: translate3d(0, 0, 0);
@@ -41,7 +41,7 @@
             const str = new Array(300).fill(0).map(item => {
                 return getRandomLetter(true)
             })
-            $("#wrap").html(str.join(''))
+            $("#wrap").html(str.join(' '))
 
             var bg_color = {
                 name: "background",
@@ -81,7 +81,7 @@
                     const colorValue = parseInt(tar.value).toString(16).padStart(2, '0')
                     console.log(colorValue)
                     _that.css(tar.name, `#${colorValue}${colorValue}${colorValue}`);
-                    $("#wrap").html(colorValue + str.join(''))
+                    $("#wrap").html(colorValue.toUpperCase() + ' ' + str.join(' '))
 
                     oriY = nowY;
                     oriX = nowX;
