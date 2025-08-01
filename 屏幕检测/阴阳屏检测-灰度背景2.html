@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>阴阳屏检测</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        #wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+            align-content: flex-start;
+            height: 100%;
+            overflow: hidden;
+            font-size: 30px;
+        }
+
+        #wrap>div {
+            line-height: 12.5vw;
+            height: 12.5vw;
+            width: 12.5vw;
+            text-align: center;
+        }
+
+        .btn {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+    </style>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            const str = new Array(300).fill(0).map(item => {
+                return getRandomLetter(true)
+            })
+            $("#wrap").html(strs2html(str))
+
+            var bg_color = {
+                name: "background",
+                value: 255
+            }
+            var _flag = 0;
+            var tar = bg_color;
+            var winH = $(window).height();
+            var winW = $(window).width();
+
+
+            $("#wrap").on("touchstart", function (e) {
+                e.stopPropagation()
+
+                let _that = $(this);
+                let oriTime = new Date().getTime();
+                let oriY = e.originalEvent.touches[0].clientY,
+                    nowY = oriY;
+                let oriX = e.originalEvent.touches[0].clientX,
+                    nowX = oriX;
+                let moveFlag = false;
+                let colorValue = ''
+
+
+                _that.on("touchmove", function (e) {
+                    e.preventDefault();
+                    nowY = e.originalEvent.touches[0].clientY;
+                    nowX = e.originalEvent.touches[0].clientX;
+                    console.log(nowY, nowX)
+                    const deltaX = nowX - oriX;
+                    const deltaY = nowY - oriY;
+
+
+                    tar.value += deltaY / winH * 30
+                    if (tar.value > 255) {
+                        tar.value = 255
+                    }
+                    console.log(tar.value)
+                    colorValue = parseInt(tar.value).toString(16).padStart(2, '0')
+                    console.log(colorValue)
+                    _that.css(tar.name, `#${colorValue}${colorValue}${colorValue}`);
+
+                    const [firstStr, secondStr] = colorValue.toUpperCase().split('')
+                    $("#wrap div").eq(0).html(firstStr)
+                    $("#wrap div").eq(1).html(secondStr)
+
+                    oriY = nowY;
+                    oriX = nowX;
+                });
+
+                _that.on("touchend", function () {
+                    _that.off("touchend").off("touchmove");
+                });
+            }).css(tar.name, "hsl(" + parseInt(tar.h) + ", 100%, " + parseInt(tar.l) + "%)");;
+            $('.btn button').on('click', function () {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('portrait').catch((error) => {
+                        console.error('无法锁定屏幕方向:', error);
+                    });
+                }
+                document.documentElement.requestFullscreen().then(() => {
+                    $('.btn').hide()
+                })
+            })
+        });
+
+        function getRandomLetter(isUpperCase = false) {
+            // 65-90 对应 A-Z，97-122 对应 a-z
+            const base = isUpperCase ? 65 : 97;
+            const offset = Math.floor(Math.random() * 26); // 生成 0-25 的随机数
+            return String.fromCharCode(base + offset);
+        }
+
+        function strs2html(arr) {
+            return arr.map(item => {
+                return `<div>${item}</div>`
+            }).join('')
+        }
+    </script>
+
+
+</head>
+
+<body>
+    <div class="btn">
+        <button>全屏</button>
+    </div>
+    <div id="wrap">
+    </div>
+</body>
+
+</html>
